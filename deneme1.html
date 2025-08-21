@@ -366,23 +366,23 @@
     <button id="continueDimensionBtn" style="margin-left: 10px;">Continue to Beam Cross-Section</button>
 
   </div>
-  
+
 
 
 <!-- Step 4: Design Load Check -->
-<div id="designLoadSection" style="display: none; margin-top: 30px;">
+<div id="designLoadSectionAlt" style="display: none; margin-top: 30px;">
   <h4>Design Load Calculation</h4>
 
-  <label for="designLoadInput">Enter your calculated Design Load (E<sub>d</sub>) in kN/m:</label><br>
-  <input type="number" id="designLoadInput" step="0.01"><br><br>
+  <label for="designLoadInputAlt">Enter your calculated Design Load (E<sub>d</sub>) in kN/m:</label><br>
+  <input type="number" id="designLoadInputAlt" step="0.01"><br><br>
 
-  <button id="checkDesignLoadBtn">Check Design Load</button>
+  <button id="checkDesignLoadBtnAlt">Check Design Load</button>
 
-  <div id="designLoadFeedback" style="margin-top: 15px;"></div>
+  <div id="designLoadFeedbackAlt" style="margin-top: 15px;"></div>
 
   <div style="margin-top: 20px; display: flex; gap: 10px;">
     <button id="backToLoadBtn">← Back to Loads</button>
-    <button id="continueDimensionBtn">Continue →</button>
+    <button id="continueDimensionBtnAlt">Continue →</button>
   </div>
 </div>
 
@@ -391,15 +391,15 @@
 <div id="dimensionScreen" style="display: none; margin-top: 30px;">
   <h4>Beam Cross Section Dimensions</h4>
 
-  <label for="designLoadInput">Enter your calculated Design Load (E<sub>d</sub>) in kN/m:</label><br>
-  <input type="number" id="designLoadInput" step="0.01"><br><br>
+  <label for="dimensionDesignLoadInput">Enter your calculated Design Load (E<sub>d</sub>) in kN/m:</label><br>
+  <input type="number" id="dimensionDesignLoadInput" step="0.01"><br><br>
 
-  <button id="checkDesignLoadBtn">Check Design Load</button>
+  <button id="dimensionCheckDesignLoadBtn">Check Design Load</button>
 
-  <div id="designLoadFeedback" style="margin-top: 15px;"></div>
+  <div id="dimensionDesignLoadFeedback" style="margin-top: 15px;"></div>
 
   <div style="margin-top: 20px; display: flex; gap: 10px;">
-    <button id="backToLoadBtn">← Back to Loads</button>
+    <button id="backToLoadDimensionBtn">← Back to Loads</button>
     <button id="continueToDesignLoadBtn">Continue →</button>
   </div>
 </div>

@@ -366,6 +366,11 @@ document.getElementById('backToLoadBtn').addEventListener('click', () => {
   showScreen('loadScreen');
 });
 
+document.getElementById('backToLoadDimensionBtn').addEventListener('click', () => {
+  playClick();
+  showScreen('loadScreen');
+});
+
 document.getElementById('continueToDesignLoadBtn').addEventListener('click', () => {
   playClick();
   showScreen('designLoadScreen'); // <- next screen
