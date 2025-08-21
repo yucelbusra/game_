@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Structural Engineer Roleplay</title>
+  <style>
+    .step {
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #ccc;
+      font-weight: bold;
+      color: white;
+    }
+
+    .step.active {
+      background: #0077cc;
+    }
+
+    .step.completed {
+      background: #2ecc71;
+    }
+
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #cce7f6;
+    }
+
+    .screen {
+      display: none;
+      height: 100vh;
+      width: 100vw;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .active {
+      display: flex;
+    }
+
+    canvas {
+      border: 1px solid #888;
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #0077cc;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    .hint-button {
+      margin-left: 10px;
+      padding: 2px 8px;
+      font-size: 14px;
+    }
+    
+
+    input, select {
+      padding: 6px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      width: 180px;
+    }
+
+    #feedback {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #e0f7e9;
+      border-left: 4px solid #2ecc71;
+      display: none;
+    }
+
+    #hintModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #hintModal img {
+      max-width: 90vw;
+      max-height: 80vh;
+    }
+
+    #feedback {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .badge {
+      width: 60px;
+      height: 60px;
+      margin-right: 10px;
+      display: inline-block;
+    }
+
+
+
+  </style>
+</head>
+<body>
+  <div id="progressBar" style="display: flex; gap: 20px; margin: 20px 0 40px 0;">
+    <div class="step" id="step1">🔹 Intro</div>
+    <div class="step" id="step2">📏 Slab</div>
+    <div class="step" id="step3">📊 Loads</div>
+    <div class="step" id="step4">📐 Width</div>
+    <div class="step" id="step5">⚖️ Design Load</div>
+    <div class="step" id="step6">🎓 Summary</div> 
+  </div>
+
+  <style>
+    .progress-step {
+      padding: 8px 12px;
+      background: #ddd;
+      border-radius: 6px;
+      transition: background 0.3s ease;
+    }
+  
+    .progress-step.completed {
+      background: #2ecc71; /* ✅ Green */
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+
+
+
+  <div id="introScreen" class="screen active">
+    <h1>🧑‍🔧 Welcome, Structural Engineer!</h1>
+    <img src="./img/welcome.gif" />
+    <p>Your task is to design timber beams for a sustainable building project.<br>Start by entering your slab design parameters.</p>
+    <button id="continueBtn">I'm Ready! →</button>
+  </div>
+
+
+  <div id="canvasScreen" class="screen">
+    <div style="display: flex; gap: 40px; align-items: flex-start;">
+      <div>
+        <h2>Slab Design Parameters</h2>
+  
+        <label for="inputWidth">Width of Slab (W) (m):</label><br>
+        <input type="number" id="inputWidth" step="0.1"><br>
+  
+        <label for="inputLength">Length of Slab (L) (m):</label><br>
+        <input type="number" id="inputLength" step="0.1"><br>
+  
+        <label for="inputBeamCount">Number of Beams:</label><br>
+        <input type="number" id="inputBeamCount" step="1" min="2"><br>
+  
+        <p id="spacingInfo" style="margin-top: 10px; font-weight: bold;"></p>
+  
+        <button id="drawCanvasBtn">Visualize Design</button>
+        <button id="backBtn">← Back</button>
+      </div>
+      <img src="./img/SlabDimensions.png" alt="Slab illustration" style="max-width: 300px;">
+    </div>
+  
+    <!-- Canvas with additional figure alongside -->
+    <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 1px;">
+      <canvas id="slabCanvas" width="400" height="200" style="border:1px solid #888;"></canvas>
+      
+      <!-- Additional figure/diagram alongside the canvas -->
+      <div style="display: flex; flex-direction: column; align-items: center;">
+      </div>
+    </div>
+    
+    <button id="continueToLoadBtn" style="margin-top: 20px;">Continue →</button>
+  </div>
+  
+  <div id="loadScreen" class="screen">
+    <div style="display: flex; gap: 20px; align-items: flex-start;">
+      
+      <div>
+        <h2>Load & Design Factors (allows negative entry)</h2>
+  
+        <label>Permanent Load (kN/m²):</label><br>
+        <input type="number" id="permanentLoad" step="0.1"><br>
+        <img id="imgPermanent" src="./img/load-permanent.png" alt="Permanent load" style="height: 30px; display: none;"><br>
+  
+        <label>Snow Load (kN/m²):</label><br>
+        <input type="number" id="snowLoad" step="0.1"><br>
+        <img id="imgSnow" src="./img/load-snow.png" alt="Snow load" style="height: 30px; display: none;"><br>
+  
+        <label>Wind Load (kN/m²):</label><br>
+        <input type="number" id="windLoad" step="0.1"><br>
+        <img id="imgWindPositive" src="./img/load-wind.png" alt="Wind load positive" style="height: 30px; display: none;">
+        <img id="imgWindNegative" src="./img/load-wind-negative.png" alt="Wind load negative" style="height: 30px; display: none;"><br>        
+  
+        <label>Mobile Load (kN/m²):</label><br>
+        <input type="number" id="mobileLoad" step="0.1"><br>
+        <img id="imgMobile" src="./img/load-mobile.png" alt="Mobile load" style="height: 30px; display: none;"><br>
+  
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <!-- Load canvas with figure alongside -->
+          <div style="display: flex; align-items: flex-start; gap: 20px;">
+            <canvas id="loadCanvas" width="400" height="400" style="border:1px solid #888;"></canvas>
+            
+            <!-- Load diagram figure -->
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <img src="./img/load-diagram.png" style="max-width: 300px; height: auto; border: 1px solid #ccc;">
+            </div>
+          </div>
+  
+          <!-- Toggle Button for Combined Load Image -->
+          <button id="toggleCombinedBtn" style="
+            display: none; 
+            margin: 10px; 
+            padding: 10px 20px; 
+            background-color: #0066cc; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px;">Show Combined Loads</button>
+        
+          <!-- Combined Load Image Display -->
+          <div id="combinedLoadImage" style="display: none; text-align: center; margin: 20px 0;">
+            <!-- Combined load images will appear here dynamically -->
+          </div>
+        
+          <div id="loadImages" style="display: flex; flex-direction: column; gap:10px; margin-top: 20px; align-items: center;">
+            <!-- Load images (e.g., permanent.png, snow.png) will appear here dynamically -->
+          </div>
+        
+          <button id="backToSlabBtn">← Back to Slab</button>
+          <button id="continueToTributaryBtn">Continue →</button>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  
+  <div id="tributaryScreen" class="screen">
+    <h2>Tributary Width Input</h2>
+  
+    <div style="display: flex; gap: 40px; align-items: flex-start;">
+      <!-- Left panel: Preview canvas + combined image -->
+      <div>
+        <canvas id="loadCanvasPreview" width="400" height="400" style="border:1px solid #888;"></canvas>
+        <div id="combinedImagePreview" style="text-align: center; margin-top: 10px;"></div>
+      </div>
+  
+      <!-- Right panel: Inputs and flow -->
+      <div>
+        <!-- Beam and tributary width input -->
+        <label for="beamSelect">Choose Beam:</label><br>
+        <select id="beamSelect"></select><br><br>
+  
+        <label for="tributaryWidth">Enter Tributary Width (m):</label><br>
+        <input type="number" id="tributaryWidth" step="0.1"><br><br>
+  
+        <button id="submitLoadBtn">Submit Tributary Width</button>
+        <div id="feedback" style="display:none; margin-top:10px;"></div>
+        <img id="feedbackGif" style="display:none; max-width:200px; margin-top:10px;">
+        <div id="badgeContainer" style="margin-top:10px;"></div>
+        
+        <!-- NEW WRAPPER for all load check steps -->
+<div id="designChecksWrapper" style="display: none;">
+  
+<!-- Step 1: SLS/ULS -->
+<!-- Step 2: Limit State Selection -->
+<div id="checkTypeScreen" style="margin-top: 20px;">
+  <h3>Select Limit State</h3>
+
+  <label>
+    <input type="checkbox" name="limitState" id="chooseSLSBtn" value="SLS">
+    SLS (Serviceability)
+  </label><br>
+
+  <label>
+    <input type="checkbox" name="limitState" id="chooseULSBtn" value="ULS">
+    ULS (Ultimate)
+  </label><br>
+
+  <!-- Display Selected Limit State -->
+  <p id="selectedLimitState" style="font-weight: bold; margin-top: 10px; display: none;"></p>
+</div>
+
+
+<!-- Step 2: Load Case Selection -->
+<div id="loadCaseScreen" style="display: none; margin-top: 20px;">
+  <h3>Which load case do you want to use?</h3>
+  <p>Select the dominant load case:</p>
+
+  <label><input type="checkbox" name="dominantLoad" id="chooseMobileBtn"> 📱 Mobile Dominated</label><br>
+  <label><input type="checkbox" name="dominantLoad" id="chooseSnowBtn"> ❄️ Snow Dominated</label><br>
+  <label><input type="checkbox" name="dominantLoad" id="chooseWindBtn"> 💨 Wind Dominated</label><br>
+
+  <div id="factorInputSection" style="display: none;">
+    <h3>Ψ Factor Selection</h3>
+  
+    <label for="categorySelect">Select Load Category:</label><br>
+    <select id="categorySelect">
+      <option value="">-- Choose Category --</option>
+      <option value="A">Category A: Domestic/Residential</option>
+      <option value="B">Category B: Office areas</option>
+      <option value="C">Category C: Congregation areas</option>
+      <option value="D">Category D: Shopping areas</option>
+      <option value="E">Category E: Storage areas</option>
+      <option value="F30">Category F: Traffic area (≤30kN)</option>
+      <option value="F160">Category F: Traffic area (≤160kN)</option>
+      <option value="G">Category G: Traffic area</option>
+      <option value="H">Category H: Roofs</option>
+      <option value="SnowFI">Snow: Finland/Iceland/Norway/Sweden</option>
+      <option value="SnowHigh">Snow: Altitude >1000m</option>
+      <option value="SnowLow">Snow: Altitude ≤1000m</option>
+      <option value="Wind">Wind loads</option>
+      <option value="Temp">Temperature (non-fire)</option>
+    </select><br><br>
+  
+    <label>Choose Ψ factors:</label><br>
+    ψ₀:
+    <select id="psi0Select"></select>
+    ψ₁:
+    <select id="psi1Select"></select>
+    ψ₂:
+    <select id="psi2Select"></select><br><br>
+
+    <button id="hintPsiBtn">ℹ️ View Ψ Table</button>
+    <button id="checkPsiBtn">Check Ψ Values</button>
+    <p id="psiFeedback" style="display:none; margin-top:10px; font-weight:bold;"></p>
+
+    <h3>γ Factor Selection</h3>
+
+    <label>γ<sub>G</sub>:</label>
+    <select id="gammaGSelect"></select>
+    
+    <label>γ<sub>Q</sub>:</label>
+    <select id="gammaQSelect"></select><br>
+    
+    <button id="hintGammaBtn">ℹ️ View γ Table</button>
+
+    <!-- 🆕 Design Load Input Section -->
+  <div id="designLoadSection" style="display: none; margin-top: 30px;">
+    <h3 style="margin-top: 20px;">Design Load Calculation</h3>
+    <label for="designLoadInput">Enter your calculated E<sub>d</sub> (kN/m):</label>
+    <input type="number" id="designLoadInput" step="0.01" style="width: 150px; margin-left: 10px;">
+
+    <button id="checkDesignLoadBtn" style="margin-left: 10px;">Submit Design Load</button>
+
+    <div id="designLoadFeedback" style="display: none; margin-top: 15px; padding: 10px; border-left: 4px solid transparent;"></div>
+
+    <button id="continueDimensionBtn" style="margin-left: 10px;">Continue to Beam Cross-Section</button>
+
+  </div>
+  
+
+
+<!-- Step 4: Design Load Check -->
+<div id="designLoadSection" style="display: none; margin-top: 30px;">
+  <h4>Design Load Calculation</h4>
+
+  <label for="designLoadInput">Enter your calculated Design Load (E<sub>d</sub>) in kN/m:</label><br>
+  <input type="number" id="designLoadInput" step="0.01"><br><br>
+
+  <button id="checkDesignLoadBtn">Check Design Load</button>
+
+  <div id="designLoadFeedback" style="margin-top: 15px;"></div>
+
+  <div style="margin-top: 20px; display: flex; gap: 10px;">
+    <button id="backToLoadBtn">← Back to Loads</button>
+    <button id="continueDimensionBtn">Continue →</button>
+  </div>
+</div>
+
+
+<!-- Step 5: Beam Section -->
+<div id="dimensionScreen" style="display: none; margin-top: 30px;">
+  <h4>Beam Cross Section Dimensions</h4>
+
+  <label for="designLoadInput">Enter your calculated Design Load (E<sub>d</sub>) in kN/m:</label><br>
+  <input type="number" id="designLoadInput" step="0.01"><br><br>
+
+  <button id="checkDesignLoadBtn">Check Design Load</button>
+
+  <div id="designLoadFeedback" style="margin-top: 15px;"></div>
+
+  <div style="margin-top: 20px; display: flex; gap: 10px;">
+    <button id="backToLoadBtn">← Back to Loads</button>
+    <button id="continueToDesignLoadBtn">Continue →</button>
+  </div>
+</div>
+
+
+<!-- Hint Modal -->
+<div id="hintModal" style="display:none; position:fixed; top:0; left:0; 
+  width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+  <div style="background:white; padding:10px; border-radius:5px; position:relative;">
+    <span id="closeHintModal" style="position:absolute; top:5px; right:10px; cursor:pointer;">✖</span>
+    <img id="hintImage" src="" style="max-width:90vw; max-height:90vh;">
+  </div>
+</div>
+
+
+
+
+<!-- Result Screen-->
+<div id="resultScreen" class="screen">
+  <h2>🏁 Final Score</h2>
+  <p id="finalScore"></p>
+</div>
+
+
+
+  
+<!-- Audio -->
+<audio id="clickSound" src="./sounds/click.mp3" preload="auto"></audio>
+<audio id="successSound" src="./sounds/success.wav" preload="auto"></audio>
+<audio id="errorSound" src="./sounds/error.wav" preload="auto"></audio>
+
+
+
+  
+  <script src="deneme1.js"></script>
+  </body>
+  </html>
+  
+
